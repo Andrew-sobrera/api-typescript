@@ -1,17 +1,22 @@
+/* eslint-disable prettier/prettier */
 import { Injectable } from '@nestjs/common';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { PrismaService } from 'src/prisma.service';
 import { Task } from '@prisma/client';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 @Injectable()
 export class TasksService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService, private eventEmitter: EventEmitter2) {}
 
   async create(createTaskDto: CreateTaskDto): Promise<Task> {
-    return await this.prisma.task.create({
+    const payload = await this.prisma.task.create({
       data: createTaskDto,
-    });
+    })
+      await this.eventEmitter.emit('create.task', payload);
+
+    return payload
   }
 
   async findAll(user): Promise<Task[]> {
